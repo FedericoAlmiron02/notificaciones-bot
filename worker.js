@@ -50,7 +50,7 @@ const subscription = supabase
     'postgres_changes',
     { event: 'INSERT', schema: 'public', table: 'pending_notifications'}, 
     async (payload) => {
-      console.log('⚡ Nuevo evento detectado:', payload.new.user_id);
+      console.log('⚡ Nuevo evento detectado:', payload.new.usuario_id);
       await procesarNotificacion(payload.new);
     }
   )
@@ -62,7 +62,7 @@ async function procesarNotificacion(registro) {
     const { data: dispositivos, error } = await supabase
       .from('dispositivos')
       .select('fcm_token')
-      .eq('usuario_id', registro.user_id);
+      .eq('usuario_id', registro.usuario_id);
 
     if (error || !dispositivos || dispositivos.length === 0) return;
 

@@ -75,10 +75,25 @@ async function procesarNotificacion(registro) {
         body: registro.mensaje || 'Nueva notificación', 
       },
       tokens: tokens,
+      android: { priority: 'high' },
+      apns: { headers: { 'apns-priority': '10' } }
     };
+    //Agrego manejo de errores para tokens inválidos
+   //await admin.messaging().sendEachForMulticast(message);
+    //console.log(`✅ Notificación enviada.`);
+    const response = await admin.messaging().sendEachForMulticast(message);
+    console.log(`Firebase -> success: ${response.successCount}, fail: ${response.failureCount}`);
 
-    await admin.messaging().sendEachForMulticast(message);
-    console.log(`✅ Notificación enviada.`);
+    await Promise.all(
+      response.responses.map(async (r, idx) => {
+        if (!r.success) {
+          console.error('Token falló', tokens[idx], r.error?.code, r.error?.message);
+          if (['messaging/registration-token-not-registered', 'messaging/invalid-registration-token'].includes(r.error?.code)) {
+            await supabase.from('dispositivos').delete().eq('fcm_token', tokens[idx]);
+          }
+        }
+      })
+    );
     
   } catch (err) {
     console.error('❌ Error enviando:', err);

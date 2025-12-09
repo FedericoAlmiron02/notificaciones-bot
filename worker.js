@@ -59,6 +59,7 @@ const subscription = supabase
 // --- E. FUNCIÓN DE ENVÍO (Igual que antes) ---
 async function procesarNotificacion(registro) {
   try {
+    console.log("📬 registro:", registro);
     const { data: dispositivos, error } = await supabase
       .from('dispositivos')
       .select('fcm_token')
@@ -68,7 +69,7 @@ async function procesarNotificacion(registro) {
 
     const tokens = dispositivos.map(d => d.fcm_token).filter(t => t);
     if (tokens.length === 0) return;
-
+    console.log("🔔 Enviando Nuevo Mensaje:", registro.mensaje);
     const message = {
       notification: {
         title: 'Nuevo Mensaje',
